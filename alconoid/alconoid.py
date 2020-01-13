@@ -154,6 +154,8 @@ clock = pygame.time.Clock()
 # Create the screen object
 # The size is determined by the constant SCREEN_WIDTH and SCREEN_HEIGHT
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+windowSurface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.DOUBLEBUF)
+scr = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
 # Instantiate player. Right now, this is just a rectangle.
 ball = Ball((300, 600), (rd.randint(-5, 5), -8), size)
 
@@ -378,7 +380,8 @@ while running:
     ball.update()
 
     # Fill the screen with black
-    screen.fill((0, 0, 0))
+    scr.fill((0, 0, 0, 60))
+    windowSurface.blit(scr, (0, 0))
 
     # Draw all sprites
     for entity in all_sprites:
