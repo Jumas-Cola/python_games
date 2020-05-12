@@ -8,12 +8,12 @@ from functools import partial
 
 class Game:
 
-    def __init__(self, player_sign, difficulty=0.7, field_size=3):
+    def __init__(self, player_sign, difficulty=0.8, field_size=3):
         self.player_sign = player_sign
-        self.difficulty = difficulty
+        self.difficulty = difficulty * 3
         self.computer_sign = 'X' if player_sign == 'O' else 'O'
         self.next_step = 'X'
-        self.game_field = [['' for _ in range(field_size)] 
+        self.game_field = [['' for _ in range(field_size)]
                                for _ in range(field_size)]
         if self.next_step == self.computer_sign:
             self.computer_step()
@@ -31,8 +31,8 @@ class Game:
             game_field = self.game_field
 
         return [(i, j) for i, row in enumerate(game_field)
-                       for j in range(len(row)) 
-                       if row[j] != self.player_sign 
+                       for j in range(len(row))
+                       if row[j] != self.player_sign
                        and row[j] != self.computer_sign]
 
     def print_game_field(self):
@@ -43,19 +43,19 @@ class Game:
 
 
     def player_step(self, cell=None):
-        
+
         self.upd_next_step()
 
         if cell is not None:
             cell = tuple(int(i) for i in cell.strip().split())
-            self.game_field[cell[0]][cell[1]] = self.player_sign 
+            self.game_field[cell[0]][cell[1]] = self.player_sign
         else:
             cell = input('Please, write cell addres:\n')
             cell = tuple(int(i) for i in cell.split())
             while cell not in self.empty_cells():
                 cell = input('\nIncorrect cell, choose another:\n')
                 cell = tuple(int(i) for i in cell.strip().split())
-            self.game_field[cell[0]][cell[1]] = self.player_sign 
+            self.game_field[cell[0]][cell[1]] = self.player_sign
 
 
     def computer_step(self):
@@ -64,8 +64,7 @@ class Game:
 
         emptys = self.empty_cells()
 
-        if len(emptys) >= len(self.game_field)**2 - 1 \
-                or random.random() > self.difficulty:
+        if len(self.game_field)**2 - len(emptys) <= 3 - self.difficulty:
             x, y = random.choice(emptys)
         else:
             step = self.best_step('computer')
@@ -160,7 +159,7 @@ class Game:
                 if i['score'] < best_score:
                     best_score = i['score']
                     best_move = i
-        
+
         return best_move
 
 
@@ -176,7 +175,7 @@ class TacTic(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-        
+
         self.colorscheme = {
                 'bg_color': '#3914AF',
                 'btns_color': '#C8B7FF'
@@ -186,7 +185,7 @@ class TacTic(tk.Tk):
         container.pack(side='top', fill='both', expand=1)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
-        
+
         self.geometry('300x300')
         try:
             self.cross_img = PhotoImage(file='cross.png')
@@ -207,9 +206,11 @@ class TacTic(tk.Tk):
 
         self.show_frame('ChooseSign')
 
+
     def show_frame(self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
+
 
     def get_page(self, page_class):
         return self.frames[page_class]
@@ -220,14 +221,14 @@ class ChooseSign(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, bg=controller.colorscheme['bg_color'])
         self.controller = controller
-        
+
         try:
             bg = controller.colorscheme['btns_color']
             img = controller.cross_img
         except:
             bg = '#000'
             img = controller.pixel
-        
+
         X = tk.Button(self, height=70, width=70,
                 image=img,
                 background=bg,
@@ -253,15 +254,25 @@ class ChooseSign(tk.Frame):
         X.grid(row=1, column=1)
         O.grid(row=1, column=3)
 
+        self.difficulty = tk.Scale(self, from_=1, to=3,
+                resolution=1,
+                orient=tk.HORIZONTAL,
+                background=controller.colorscheme['btns_color'],
+                )
+        self.difficulty.set(2)
+        self.difficulty.grid(row=3, column=1, columnspan=3, sticky='nesw')
+
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1)
+        self.grid_rowconfigure(4, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(2, weight=1)
         self.grid_columnconfigure(4, weight=1)
 
+
     def click_handler(self, sign):
         page = self.controller.get_page('GameField')
-        page.game = Game(sign)
+        page.game = Game(sign, difficulty=self.difficulty.get() / 3)
         page.refresh_field()
         self.controller.show_frame('GameField')
 
@@ -280,6 +291,7 @@ class GameField(tk.Frame):
         self.grid_rowconfigure(4, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(4, weight=1)
+
 
     def refresh_field(self):
         if self.buttons:
@@ -308,12 +320,12 @@ class GameField(tk.Frame):
                     img = self.controller.pixel
                     bg = self.controller.colorscheme['btns_color']
 
-                button = tk.Button(self, height=70, width=70, 
-                        image=img, 
-                        background=bg, 
+                button = tk.Button(self, height=70, width=70,
+                        image=img,
+                        background=bg,
                         activebackground=bg,
                         border=0,
-                        command=partial(self.click_handler, (i, j)) 
+                        command=partial(self.click_handler, (i, j))
                         )
                 button.grid(row=i + 1, column=j + 1, padx=3, pady=3)
                 btn_row.append(button)
@@ -334,7 +346,7 @@ class GameField(tk.Frame):
                 messagebox.showinfo('Info', 'Draw!')
                 self.after(500, self.show_choose_frame)
                 return
-            self.after(1, self.computer_step)
+            self.after(10, self.computer_step)
 
 
     def computer_step(self):
