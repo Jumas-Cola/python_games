@@ -65,6 +65,7 @@ class Button:
 
         self.surf.blit(self.txt_surf, self.txt_rect)
 
+
     def draw(self):
         self.surf = pygame.surface.Surface((self.width, self.height))
         self.txt_surf = font.render(self.name, 1, WHITE)
@@ -154,6 +155,7 @@ class Cell:
         self.row = row
         self.col = col
 
+
     def __repr__(self):
         return 'Cell(rect={}, color={}, row={}, col={})'.format(self.rect, self.color, self.row, self.col)
 
@@ -242,7 +244,6 @@ class MenuScene:
                 b.height = HEIGHT//8
                 counter += 1
 
-
         # Move slides
         for s in self.slides:
             if s.hit:
@@ -292,9 +293,9 @@ class GameScene:
         self.cells[self.cells_on_row - 1][0].player = 2
         self.cells[self.cells_on_row - 1][0].color = GREY
 
-        self.txt_surf = font.render('Игрок: {:.0f}'.format(self.player), 1, BLACK)
-        self.txt_rect = self.txt_surf.get_rect(center=(WIDTH*3//4, HEIGHT*19//20))
-        screen.blit(self.txt_surf, self.txt_rect)
+       #self.txt_surf = font.render('Игрок: {:.0f}'.format(self.player), 1, BLACK)
+       #self.txt_rect = self.txt_surf.get_rect(center=(WIDTH*3//4, HEIGHT*19//20))
+       #screen.blit(self.txt_surf, self.txt_rect)
 
 
     def get_possible_steps(self, player):
@@ -323,13 +324,12 @@ class GameScene:
         self.fill_player_cells_cell_color(cell.row, cell.col)
 
 
-
     def handle_events(self, event):
         global WIDTH, HEIGHT, font
 
         if event.type in (VIDEORESIZE, VIDEOEXPOSE):
             WIDTH, HEIGHT = event.dict['size']
-            font = pygame.font.SysFont(None, HEIGHT//20)
+           #font = pygame.font.SysFont(None, HEIGHT//20)
             self.cell_w = WIDTH // self.cells_on_row
             self.cell_h = HEIGHT*11/12 // self.cells_on_col
             screen = pygame.display.set_mode((WIDTH, HEIGHT), HWSURFACE|DOUBLEBUF|RESIZABLE)
@@ -380,9 +380,9 @@ class GameScene:
         for b in self.btns:
             b.draw()
 
-        self.txt_surf = font.render('Игрок: {:.0f}'.format(self.player), 1, BLACK)
-        self.txt_rect = self.txt_surf.get_rect(center=(WIDTH*3//4, HEIGHT*19//20))
-        screen.blit(self.txt_surf, self.txt_rect)
+       #self.txt_surf = font.render('Игрок: {:.0f}'.format(self.player), 1, BLACK)
+       #self.txt_rect = self.txt_surf.get_rect(center=(WIDTH*3//4, HEIGHT*19//20))
+       #screen.blit(self.txt_surf, self.txt_rect)
 
 
     def is_player_in_neighbours(self, cell, player):
