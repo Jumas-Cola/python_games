@@ -295,7 +295,7 @@ class GameScene:
 
 
     def handle_events(self, event):
-        global WIDTH, HEIGHT
+        global WIDTH, HEIGHT, font
 
         if event.type in (VIDEORESIZE, VIDEOEXPOSE):
             WIDTH, HEIGHT = event.dict['size']
