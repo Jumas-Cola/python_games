@@ -154,6 +154,9 @@ class Cell:
         self.row = row
         self.col = col
 
+    def __repr__(self):
+        return 'Cell(rect={}, color={}, row={}, col={})'.format(self.rect, self.color, self.row, self.col)
+
 
 class GameOverScene:
     def __init__(self, player):
@@ -294,6 +297,33 @@ class GameScene:
         screen.blit(self.txt_surf, self.txt_rect)
 
 
+    def get_possible_steps(self, player):
+        steps = set()
+        for cells_row in self.cells:
+            for cell in cells_row:
+                if cell.player == player:
+                    steps.update(i for i in self.get_cell_neighbours(cell) if i.player != player)
+        return list(steps)
+
+    
+    def auto_step(self):
+        first_player_color = self.cells[0][self.cells_on_col - 1].color
+        possible_steps = self.get_possible_steps(self.player)
+        opponent_possible_steps = self.get_possible_steps(2 if self.player == 1 else 1)
+        difference = list(set(possible_steps) - set(opponent_possible_steps))
+        for c in difference:
+            if c.color == first_player_color:
+                cell = c
+                break
+        else:
+            cell = random.choice(possible_steps)
+        self.steps += 1
+        cell.player = self.player
+        self.player = 2 if self.player == 1 else 1
+        self.fill_player_cells_cell_color(cell.row, cell.col)
+
+
+
     def handle_events(self, event):
         global WIDTH, HEIGHT, font
 
@@ -314,15 +344,17 @@ class GameScene:
                 b.height = HEIGHT//12
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = event.pos
-            for row, cells_row in enumerate(self.cells):
-                for col, cell in enumerate(cells_row):
+            for cells_row in self.cells:
+                for cell in cells_row:
                     if cell.rect.collidepoint(mouse_pos):
-                        if self.is_player_in_neighbours(row, col, self.player):
+                        if self.is_player_in_neighbours(cell, self.player):
                             if cell.player != self.player:
                                 self.steps += 1
                                 cell.player = self.player
                                 self.player = 2 if self.player == 1 else 1
-                                self.fill_player_cells_cell_color(row, col)
+                                self.fill_player_cells_cell_color(cell.row, cell.col)
+                                if not self.get_winner():
+                                    self.auto_step()
         elif event.type == pygame.MOUSEBUTTONUP:
             mouse_pos = event.pos
             for b in self.btns:
@@ -335,6 +367,7 @@ class GameScene:
 
         winner = self.get_winner()
         if winner:
+            pygame.time.delay(700)
             open_game_over(winner)
 
 
@@ -352,11 +385,12 @@ class GameScene:
         screen.blit(self.txt_surf, self.txt_rect)
 
 
-    def is_player_in_neighbours(self, row, col, player):
-        return any(item.player == player for item in self.get_cell_neighbours(row, col))
+    def is_player_in_neighbours(self, cell, player):
+        return any(item.player == player for item in self.get_cell_neighbours(cell))
 
 
-    def get_cell_neighbours(self, row, col):
+    def get_cell_neighbours(self, cell):
+        row, col = cell.row, cell.col
         neighbours = []
         for i, j in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
             if row + i in range(0, self.cells_on_row):
@@ -368,17 +402,17 @@ class GameScene:
     def fill_player_cells_cell_color(self, row, col):
         bag = []
         source_cell = self.cells[row][col]
-        for row, cells_row in enumerate(self.cells):
-            for col, cell in enumerate(cells_row):
+        for cells_row in self.cells:
+            for cell in cells_row:
                 if cell.player == source_cell.player:
                     cell.color = source_cell.color
-                    for n in self.get_cell_neighbours(row, col):
+                    for n in self.get_cell_neighbours(cell):
                         if n.color == source_cell.color and n.player in (0, self.player):
                             n.player = source_cell.player
                             bag.append(n)
         while bag:
             cell = bag.pop()
-            for n in self.get_cell_neighbours(cell.row, cell.col):
+            for n in self.get_cell_neighbours(cell):
                 if n.color == source_cell.color and n.player in (0, self.player):
                     n.player = source_cell.player
                     bag.append(n)
@@ -415,9 +449,9 @@ while running:
         else:
             scene.handle_events(event)
 
-    scene.update()
     scene.draw()
     pygame.display.flip()
+    scene.update()
     clock.tick(30)
 
 pygame.quit()
