@@ -167,7 +167,7 @@ class GameOverScene:
         font = pygame.font.SysFont(None, WIDTH//8)
         self.player = player
         self.last = pygame.time.get_ticks()
-        self.interval = 100000
+        self.interval = 1000
         screen.fill(WHITE)
         self.txt_surf = font.render('Выиграл: {}'.format(self.player), 1, BLUE)
         self.txt_rect = self.txt_surf.get_rect(center=(WIDTH//2, HEIGHT//2))
