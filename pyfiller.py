@@ -82,7 +82,7 @@ class Button:
 class Slider:
     def __init__(self, name, val, maxi, mini, xpos, ypos, width, height):
         self.name = name
-        self.val = val  # start value
+        self.val = val
         self.maxi = maxi
         self.mini = mini
         self.xpos = xpos
@@ -164,10 +164,10 @@ class GameOverScene:
     def __init__(self, player):
         global font
 
-        font = pygame.font.SysFont(None, HEIGHT//8)
+        font = pygame.font.SysFont(None, WIDTH//8)
         self.player = player
         self.last = pygame.time.get_ticks()
-        self.interval = 1000
+        self.interval = 100000
         screen.fill(WHITE)
         self.txt_surf = font.render('Выиграл: {}'.format(self.player), 1, BLUE)
         self.txt_rect = self.txt_surf.get_rect(center=(WIDTH//2, HEIGHT//2))
@@ -179,7 +179,7 @@ class GameOverScene:
 
         if event.type in (VIDEORESIZE, VIDEOEXPOSE):
             WIDTH, HEIGHT = event.dict['size']
-            font = pygame.font.SysFont(None, HEIGHT//8)
+            font = pygame.font.SysFont(None, WIDTH//8)
             screen = pygame.display.set_mode((WIDTH, HEIGHT), HWSURFACE|DOUBLEBUF|RESIZABLE)
 
 
@@ -194,7 +194,10 @@ class GameOverScene:
 
     def draw(self):
         screen.fill(WHITE)
-        self.txt_surf = font.render('Выиграл: {}'.format(self.player), 1, BLUE)
+        if self.player == 1:
+            self.txt_surf = font.render('Вы выиграли!', 1, BLUE)
+        else:
+            self.txt_surf = font.render('Выиграл компьютер!', 1, BLUE)
         self.txt_rect = self.txt_surf.get_rect(center=(WIDTH//2, HEIGHT//2))
         screen.blit(self.txt_surf, self.txt_rect)
 
@@ -244,7 +247,6 @@ class MenuScene:
                 b.height = HEIGHT//8
                 counter += 1
 
-        # Move slides
         for s in self.slides:
             if s.hit:
                 s.move()
@@ -293,10 +295,6 @@ class GameScene:
         self.cells[self.cells_on_row - 1][0].player = 2
         self.cells[self.cells_on_row - 1][0].color = GREY
 
-       #self.txt_surf = font.render('Игрок: {:.0f}'.format(self.player), 1, BLACK)
-       #self.txt_rect = self.txt_surf.get_rect(center=(WIDTH*3//4, HEIGHT*19//20))
-       #screen.blit(self.txt_surf, self.txt_rect)
-
 
     def get_possible_steps(self, player):
         steps = set()
@@ -329,7 +327,7 @@ class GameScene:
 
         if event.type in (VIDEORESIZE, VIDEOEXPOSE):
             WIDTH, HEIGHT = event.dict['size']
-           #font = pygame.font.SysFont(None, HEIGHT//20)
+            font = pygame.font.SysFont(None, HEIGHT//20)
             self.cell_w = WIDTH // self.cells_on_row
             self.cell_h = HEIGHT*11/12 // self.cells_on_col
             screen = pygame.display.set_mode((WIDTH, HEIGHT), HWSURFACE|DOUBLEBUF|RESIZABLE)
@@ -379,10 +377,6 @@ class GameScene:
                 #screen.blit(font.render(str(cell.player), True, (0,0,0)), cell.rect.center)
         for b in self.btns:
             b.draw()
-
-       #self.txt_surf = font.render('Игрок: {:.0f}'.format(self.player), 1, BLACK)
-       #self.txt_rect = self.txt_surf.get_rect(center=(WIDTH*3//4, HEIGHT*19//20))
-       #screen.blit(self.txt_surf, self.txt_rect)
 
 
     def is_player_in_neighbours(self, cell, player):
