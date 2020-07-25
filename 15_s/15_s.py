@@ -124,7 +124,7 @@ class Game:
             self.steps = 0
             field_lst = list(range(self.size * self.size))
             rd.shuffle(field_lst)
-            while not self.check_valid(field_lst):
+            while not self.check_valid_for_4(field_lst):
                 rd.shuffle(field_lst)
             self.field = [field_lst[n: n + self.size]
                           for n in range(len(field_lst))[::self.size]]
