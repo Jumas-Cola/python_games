@@ -178,7 +178,8 @@ class GameOverScene:
         global WIDTH, HEIGHT, font
 
         if event.type in (VIDEORESIZE, VIDEOEXPOSE):
-            WIDTH, HEIGHT = event.dict['size']
+            if 'size' in event.dict:
+                WIDTH, HEIGHT = event.dict['size']
             font = pygame.font.SysFont(None, WIDTH//8)
             screen = pygame.display.set_mode((WIDTH, HEIGHT), HWSURFACE|DOUBLEBUF|RESIZABLE)
 
@@ -230,7 +231,8 @@ class MenuScene:
                 if b.button_rect.collidepoint(pos):
                     b.func()
         elif event.type in (VIDEORESIZE, VIDEOEXPOSE):
-            WIDTH, HEIGHT = event.dict['size']
+            if 'size' in event.dict:
+                WIDTH, HEIGHT = event.dict['size']
             font = pygame.font.SysFont(None, HEIGHT//20)
             screen = pygame.display.set_mode((WIDTH, HEIGHT), HWSURFACE|DOUBLEBUF|RESIZABLE)
             counter = 1
@@ -326,7 +328,8 @@ class GameScene:
         global WIDTH, HEIGHT, font
 
         if event.type in (VIDEORESIZE, VIDEOEXPOSE):
-            WIDTH, HEIGHT = event.dict['size']
+            if 'size' in event.dict:
+                WIDTH, HEIGHT = event.dict['size']
             font = pygame.font.SysFont(None, HEIGHT//20)
             self.cell_w = WIDTH // self.cells_on_row
             self.cell_h = HEIGHT*11/12 // self.cells_on_col
