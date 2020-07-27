@@ -348,7 +348,7 @@ class GameScene:
             for cells_row in self.cells:
                 for cell in cells_row:
                     if cell.rect.collidepoint(mouse_pos):
-                        if self.is_player_in_neighbours(cell, self.player):
+                        if cell.color in {c.color for c in self.get_possible_steps(self.player)}:
                             if cell.player != self.player:
                                 self.steps += 1
                                 cell.player = self.player
@@ -380,10 +380,6 @@ class GameScene:
                 #screen.blit(font.render(str(cell.player), True, (0,0,0)), cell.rect.center)
         for b in self.btns:
             b.draw()
-
-
-    def is_player_in_neighbours(self, cell, player):
-        return any(item.player == player for item in self.get_cell_neighbours(cell))
 
 
     def get_cell_neighbours(self, cell):
