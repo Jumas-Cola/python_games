@@ -348,14 +348,17 @@ class GameScene:
             for cells_row in self.cells:
                 for cell in cells_row:
                     if cell.rect.collidepoint(mouse_pos):
-                        if cell.color in {c.color for c in self.get_possible_steps(self.player)}:
-                            if cell.player != self.player:
+                        possible_steps = self.get_possible_steps(self.player)
+                        for c in possible_steps:
+                            if cell.color == c.color:
+                                cell = c
                                 self.steps += 1
                                 cell.player = self.player
                                 self.player = 2 if self.player == 1 else 1
                                 self.fill_player_cells_cell_color(cell.row, cell.col)
                                 if not self.get_winner():
                                     self.auto_step()
+                                break
         elif event.type == pygame.MOUSEBUTTONUP:
             mouse_pos = event.pos
             for b in self.btns:
