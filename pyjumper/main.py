@@ -141,7 +141,7 @@ class PyJumper(Game):
         platform = platform_class(random.randint(100, 400),
                 self.platforms_list[-1].top - 200,
                 c.platform_w, c.platform_h,
-                springed=True if random.random() > 0.7 else False)
+                springed=True if random.random() > 0.8 else False)
         self.platforms_list.append(platform)
         self.objects.append(platform)
 
