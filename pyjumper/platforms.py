@@ -32,7 +32,14 @@ class Platform(GameObject):
         self.need_to_delete = False
         self.is_hited = False
         self.springed = springed
+        self.broken = False
 
+    def redraw_background(self):
+        self.background_image = pygame.image.load(self.back_image_filename)
+        self.background_image = pygame.transform.scale(
+                self.background_image,
+                self.bounds.size)
+        self.background_image = self.background_image.convert_alpha()
 
     def draw(self, surface):
         if hasattr(self, 'background_image'):
@@ -46,7 +53,6 @@ class Platform(GameObject):
             surface.blit(self.spring_image, (
                 self.left + self.spring_offset,
                 self.top - c.platform_h))
-
 
     def update_pos(self):
         pass
@@ -62,7 +68,6 @@ class MovingHorizontalPlatform(Platform):
         Platform.__init__(self, x, y, w, h, back_image_filename, springed=springed)
         self.speed = (3, 0)
 
-
     def update_pos(self):
         w, h = pygame.display.get_surface().get_size()
         if self.right >= w or self.left <= 0:
@@ -76,7 +81,6 @@ class MovingVerticalPlatform(Platform):
         self.start_pos = y
         self.diapason = 100
 
-
     def update_pos(self):
         if self.top - self.diapason >= self.start_pos:
             self.bounds.top = self.start_pos + self.diapason
@@ -84,7 +88,7 @@ class MovingVerticalPlatform(Platform):
         elif self.top < self.start_pos:
             self.bounds.top = self.start_pos
             self.speed = (self.speed[0], -self.speed[1])
-        if self.speed[1] == c.platforms_moving_down_speed:
+        if self.speed[1] == c.scrolling_down_speed:
             self.speedy_before_scroll = 2
 
 
@@ -92,8 +96,23 @@ class OneHitPlatform(Platform):
     def __init__(self, x, y, w, h, back_image_filename='images/one_hit_platform.png', springed=False):
         Platform.__init__(self, x, y, w, h, back_image_filename, springed=springed)
 
-
     def update_pos(self):
         if self.is_hited:
             self.need_to_delete = True
 
+
+class BrokenPlatform(Platform):
+    def __init__(self, x, y, w, h, back_image_filename='images/broken_platform.png', springed=False):
+        Platform.__init__(self, x, y, w, h, back_image_filename, springed=False)
+        self.player_jump_speed = 0
+        self.broken = True
+        self.delete_delay = 10
+
+    def update_pos(self):
+        if self.is_hited:
+            self.delete_delay -= 1
+            self.back_image_filename = 'images/broken_platform_2.png'
+            self.redraw_background()
+            self.bounds.top += 1
+            if not self.delete_delay:
+                self.need_to_delete = True

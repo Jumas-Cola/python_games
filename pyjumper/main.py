@@ -19,7 +19,7 @@ class PyJumper(Game):
         Game.__init__(self, 'PyJumper', c.screen_width, c.screen_height, c.background_image, c.frame_rate)
         self.score = 0
         self.platforms_list = None
-        self.platforms_moving = False
+        self.scrolling = False
         self.create_objects()
         self.sound_effects = {
                 name: pygame.mixer.Sound(sound)
@@ -47,19 +47,27 @@ class PyJumper(Game):
     def create_platforms(self):
         platforms_list = []
 
-        platform_1 = platforms.BasicPlatform(150, 700, c.platform_w, c.platform_h)
+        platform_1 = platforms.BasicPlatform(c.screen_width//2 -
+                (c.platforms_generate_interval[1] - c.platforms_generate_interval[0])
+                + 150, 700, c.platform_w, c.platform_h)
         platforms_list.append(platform_1)
         self.objects.append(platform_1)
 
-        platform_2 = platforms.BasicPlatform(300, 500, c.platform_w, c.platform_h)
+        platform_2 = platforms.BasicPlatform(c.screen_width//2 -
+                (c.platforms_generate_interval[1] - c.platforms_generate_interval[0])
+                + 300, 500, c.platform_w, c.platform_h)
         platforms_list.append(platform_2)
         self.objects.append(platform_2)
 
-        platform_3 = platforms.BasicPlatform(100, 300, c.platform_w, c.platform_h)
+        platform_3 = platforms.BasicPlatform(c.screen_width//2 -
+                (c.platforms_generate_interval[1] - c.platforms_generate_interval[0])
+                + 100, 300, c.platform_w, c.platform_h)
         platforms_list.append(platform_3)
         self.objects.append(platform_3)
 
-        platform_4 = platforms.BasicPlatform(200, 100, c.platform_w, c.platform_h)
+        platform_4 = platforms.BasicPlatform(c.screen_width//2 -
+                (c.platforms_generate_interval[1] - c.platforms_generate_interval[0])
+                + 200, 100, c.platform_w, c.platform_h)
         platforms_list.append(platform_4)
         self.objects.append(platform_4)
 
@@ -68,7 +76,9 @@ class PyJumper(Game):
 
 
     def create_player(self):
-        player = Player(150, 500, c.player_w, c.player_h,
+        player = Player(c.screen_width//2 -
+                (c.platforms_generate_interval[1] - c.platforms_generate_interval[0])
+                + 150, 500, c.player_w, c.player_h,
                 (0, 0),
                 (0, 1),
                 5,
@@ -114,11 +124,15 @@ class PyJumper(Game):
             if edge == 'top' and self.player.speed[1] > 3:
                 if platform.springed:
                     self.sound_effects['spring'].play()
+                elif platform.broken and not platform.is_hited:
+                    self.sound_effects['broken'].play()
                 else:
                     self.sound_effects['jump'].play()
                 speed_x = s[0]
-                if self.platforms_moving:
-                    speed_y = -(platform.player_jump_speed - c.platforms_moving_down_speed)
+                if platform.broken:
+                    speed_y = s[1]
+                elif self.scrolling:
+                    speed_y = -(platform.player_jump_speed - c.scrolling_down_speed)
                 else:
                     speed_y = -platform.player_jump_speed
                 if self.player.moving_left:
@@ -131,14 +145,24 @@ class PyJumper(Game):
 
 
     def add_platform(self):
-        platform_class = random.choice([
-            platforms.BasicPlatform,
-            platforms.MovingHorizontalPlatform,
-            platforms.MovingVerticalPlatform,
-            platforms.OneHitPlatform,
-            ])
+        platform_classes = [
+                platforms.BasicPlatform,
+                platforms.BasicPlatform,
+                platforms.BasicPlatform,
+                platforms.MovingHorizontalPlatform,
+                platforms.MovingHorizontalPlatform,
+                platforms.MovingVerticalPlatform,
+                platforms.OneHitPlatform,
+                ]
 
-        platform = platform_class(random.randint(100, 400),
+        if self.platforms_list[-1].springed:
+            platform_classes.append(platforms.BrokenPlatform)
+
+        platform_class = random.choice(platform_classes)
+
+        platform = platform_class(c.screen_width//2 -
+                (c.platforms_generate_interval[1] - c.platforms_generate_interval[0])
+                + random.randint(*c.platforms_generate_interval),
                 self.platforms_list[-1].top - 200,
                 c.platform_w, c.platform_h,
                 springed=True if random.random() > 0.8 else False)
@@ -161,47 +185,47 @@ class PyJumper(Game):
             self.sound_effects['pada'].play()
             time.sleep(2)
             self.game_over = True
-        elif self.player.top <= c.screen_scroll_player_top:
+        elif self.player.top <= c.screen_scroll_player_top: # Если игрок выше точки прокрутки
             if self.platforms_list[-1].top > 0:
                 self.add_platform()
 
             for platform in self.platforms_list:
-                if platform.top >= c.screen_height:
-                    self.delete_platform(platform)
-                elif platform.need_to_delete:
-                    self.delete_platform(platform)
-                else:
-                    if not self.platforms_moving:
-                        platform.speedy_before_scroll = platform.speed[1]
+                if not self.scrolling:
+                    platform.speedy_before_scroll = platform.speed[1]
 
-                    platform.speed = (
-                            platform.speed[0],
-                            platform.speedy_before_scroll + c.platforms_moving_down_speed)
+                platform.speed = (
+                        platform.speed[0],
+                        platform.speedy_before_scroll + c.scrolling_down_speed)
 
-            if not self.platforms_moving:
+            if not self.scrolling:
                 self.player.speed = (
                         self.player.speed[0], 
-                        self.player.speed[1] + c.platforms_moving_down_speed)
+                        self.player.speed[1] + c.scrolling_down_speed)
 
-            self.platforms_moving = True
-        elif self.player.top > c.screen_scroll_player_top:
+            self.scrolling = True
+        elif self.player.top > c.screen_scroll_player_top: # Если игрок ниже точки прокрутки
             for platform in self.platforms_list:
                 platform.speed = (
                         platform.speed[0],
-                        platform.speedy_before_scroll if self.platforms_moving else platform.speed[1])
+                        platform.speedy_before_scroll if self.scrolling else platform.speed[1])
 
-            if self.platforms_moving:
+            if self.scrolling:
                 self.player.speed = (
                         self.player.speed[0], 
-                        self.player.speed[1] - c.platforms_moving_down_speed)
+                        self.player.speed[1] - c.scrolling_down_speed)
 
-            self.platforms_moving = False
+            self.scrolling = False
 
-        if self.platforms_moving:
-            self.score += 1
-            for platform in self.platforms_list:
+
+        for platform in self.platforms_list:
+            if self.scrolling:
                 if hasattr(platform, 'start_pos'):
-                    platform.start_pos += c.platforms_moving_down_speed
+                    platform.start_pos += c.scrolling_down_speed
+            if platform.top >= c.screen_height or platform.need_to_delete:
+                self.delete_platform(platform)
+
+        if self.scrolling:
+            self.score += 1
 
 
     def update(self):

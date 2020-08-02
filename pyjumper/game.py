@@ -7,6 +7,9 @@ from collections import defaultdict
 class Game:
     def __init__(self, caption, width, height, back_image_filename, frame_rate):
         self.background_image = pygame.image.load(back_image_filename)
+        self.background_image = pygame.transform.scale(
+                self.background_image,
+                (width, height))
         self.frame_rate = frame_rate
         self.game_over = False
         self.objects = []
