@@ -7,7 +7,7 @@ from game_object import GameObject
 
 
 class Player(GameObject):
-    def __init__(self, x, y, w, h, speed, acceleration, offset, back_image_filename=None):
+    def __init__(self, x, y, w, h, speed, acceleration, offset, back_image_filename):
         GameObject.__init__(self, x, y, w, h, speed, acceleration)
         self.background_image = pygame.image.load(back_image_filename)
         self.background_image = pygame.transform.scale(

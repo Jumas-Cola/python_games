@@ -7,6 +7,8 @@ import config as c
 from game_object import GameObject
 
 
+spring_image = 'images/spring.png'
+
 
 class Platform(GameObject):
     def __init__(self, x, y, w, h, back_image_filename=None, color=None, springed=False, player_jump_speed=20):
@@ -18,21 +20,22 @@ class Platform(GameObject):
                     self.background_image,
                     self.bounds.size)
             self.background_image = self.background_image.convert_alpha()
+        else:
+            self.color = color
         if springed:
-            self.spring_image = pygame.image.load(c.spring_image)
+            self.spring_image = pygame.image.load(spring_image)
             self.spring_image = pygame.transform.scale(
                     self.spring_image,
                     (c.platform_h, c.platform_h))
             self.spring_image = self.spring_image.convert_alpha()
             self.spring_offset = random.randint(c.platform_h, c.platform_w - c.platform_h)
             self.player_jump_speed = 30
-        if color:
-            self.color = color
         self.speedy_before_scroll = self.speed[1]
         self.need_to_delete = False
         self.is_hited = False
         self.springed = springed
         self.broken = False
+
 
     def redraw_background(self):
         self.background_image = pygame.image.load(self.back_image_filename)
@@ -40,6 +43,7 @@ class Platform(GameObject):
                 self.background_image,
                 self.bounds.size)
         self.background_image = self.background_image.convert_alpha()
+
 
     def draw(self, surface):
         if hasattr(self, 'background_image'):
@@ -53,6 +57,7 @@ class Platform(GameObject):
             surface.blit(self.spring_image, (
                 self.left + self.spring_offset,
                 self.top - c.platform_h))
+
 
     def update_pos(self):
         pass
@@ -68,6 +73,7 @@ class MovingHorizontalPlatform(Platform):
         Platform.__init__(self, x, y, w, h, back_image_filename, springed=springed)
         self.speed = (3, 0)
 
+
     def update_pos(self):
         w, h = pygame.display.get_surface().get_size()
         if self.right >= w or self.left <= 0:
@@ -80,6 +86,7 @@ class MovingVerticalPlatform(Platform):
         self.speed = (0, 2)
         self.start_pos = y
         self.diapason = 100
+
 
     def update_pos(self):
         if self.top - self.diapason >= self.start_pos:
@@ -96,6 +103,7 @@ class OneHitPlatform(Platform):
     def __init__(self, x, y, w, h, back_image_filename='images/one_hit_platform.png', springed=False):
         Platform.__init__(self, x, y, w, h, back_image_filename, springed=springed)
 
+
     def update_pos(self):
         if self.is_hited:
             self.need_to_delete = True
@@ -107,6 +115,7 @@ class BrokenPlatform(Platform):
         self.player_jump_speed = 0
         self.broken = True
         self.delete_delay = 10
+
 
     def update_pos(self):
         if self.is_hited:
