@@ -9,6 +9,7 @@ import platforms
 from player import Player
 from game import Game
 from text_object import TextObject
+from decor_obj import DecorObject
 
 
 class PyJumper(Game):
@@ -77,7 +78,7 @@ class PyJumper(Game):
                 + 150, 500, c.player_w, c.player_h,
                 (0, 0),
                 (0, 1),
-                5,
+                10,
                 c.player_background_image)
         self.keydown_handlers[pygame.K_LEFT].append(player.handle)
         self.keydown_handlers[pygame.K_RIGHT].append(player.handle)
@@ -88,7 +89,7 @@ class PyJumper(Game):
 
 
     def create_decor(self):
-        top_rect = platforms.Platform(0, 0, c.screen_width, 100,
+        top_rect = DecorObject(0, 0, c.screen_width, 100,
                 back_image_filename='images/topbar.png')
         self.objects.append(top_rect)
 
@@ -124,8 +125,6 @@ class PyJumper(Game):
                 speed_x = s[0]
                 if platform.broken:
                     speed_y = s[1]
-                elif self.scrolling:
-                    speed_y = -(platform.player_jump_speed - c.scrolling_down_speed)
                 else:
                     speed_y = -platform.player_jump_speed
                 if self.player.moving_left:
@@ -172,6 +171,7 @@ class PyJumper(Game):
         for platform in self.platforms_list:
             platform.update_pos()
 
+        scrolling_down_speed = abs(self.player.top - c.screen_scroll_player_top)
 
         # Общие изменения для всех типов платформ
         if self.player.top > c.screen_height:
@@ -179,41 +179,21 @@ class PyJumper(Game):
             time.sleep(2)
             self.game_over = True
         elif self.player.top <= c.screen_scroll_player_top: # Если игрок выше точки прокрутки
-            if self.platforms_list[-1].top > 0:
-                self.add_platform()
-
-            for platform in self.platforms_list:
-                if not self.scrolling:
-                    platform.speedy_before_scroll = platform.speed[1]
-
-                platform.speed = (
-                        platform.speed[0],
-                        platform.speedy_before_scroll + c.scrolling_down_speed)
-
-            if not self.scrolling:
-                self.player.speed = (
-                        self.player.speed[0], 
-                        self.player.speed[1] + c.scrolling_down_speed)
-
+            for obj in self.objects:
+                if hasattr(obj, 'scrollable') and obj.scrollable:
+                    obj.bounds.top += scrolling_down_speed
             self.scrolling = True
         elif self.player.top > c.screen_scroll_player_top: # Если игрок ниже точки прокрутки
-            for platform in self.platforms_list:
-                platform.speed = (
-                        platform.speed[0],
-                        platform.speedy_before_scroll if self.scrolling else platform.speed[1])
-
-            if self.scrolling:
-                self.player.speed = (
-                        self.player.speed[0], 
-                        self.player.speed[1] - c.scrolling_down_speed)
-
             self.scrolling = False
 
+
+        if self.platforms_list[-1].top > 0:
+            self.add_platform()
 
         for platform in self.platforms_list:
             if self.scrolling:
                 if hasattr(platform, 'start_pos'):
-                    platform.start_pos += c.scrolling_down_speed
+                    platform.start_pos += scrolling_down_speed
             if platform.top >= c.screen_height or platform.need_to_delete:
                 self.delete_platform(platform)
 

@@ -21,8 +21,6 @@ player_h = 70
 menu_button_w = 200
 menu_button_h = 70
 
-scrolling_down_speed = 10
-
 screen_scroll_player_top = 350
 
 platforms_generate_interval = (100, 400)

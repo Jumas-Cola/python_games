@@ -18,6 +18,7 @@ class Player(GameObject):
         self.moving_left = False
         self.moving_right = False
         self.direction = 'r'
+        self.scrollable = True
 
 
     def draw(self, surface):

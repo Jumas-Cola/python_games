@@ -11,7 +11,7 @@ spring_image = 'images/spring.png'
 
 
 class Platform(GameObject):
-    def __init__(self, x, y, w, h, back_image_filename=None, color=None, springed=False, player_jump_speed=20):
+    def __init__(self, x, y, w, h, back_image_filename=None, color=None, springed=False, player_jump_speed=22):
         GameObject.__init__(self, x, y, w, h)
         self.player_jump_speed = player_jump_speed
         if back_image_filename:
@@ -35,6 +35,7 @@ class Platform(GameObject):
         self.is_hited = False
         self.springed = springed
         self.broken = False
+        self.scrollable = True
 
 
     def redraw_background(self):
@@ -95,8 +96,6 @@ class MovingVerticalPlatform(Platform):
         elif self.top < self.start_pos:
             self.bounds.top = self.start_pos
             self.speed = (self.speed[0], -self.speed[1])
-        if self.speed[1] == c.scrolling_down_speed:
-            self.speedy_before_scroll = 2
 
 
 class OneHitPlatform(Platform):

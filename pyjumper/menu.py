@@ -1,17 +1,17 @@
 import random
-
+import sys
 import time
 import pygame
 from pygame.rect import Rect
 
 import config as c
 from player import Player
-from platforms import BasicPlatform
+from platforms import Platform, BasicPlatform
 from game import Game
 from text_object import TextObject
 from button import Button
 from pyjumper import PyJumper
-import sys
+from decor_obj import DecorObject
 
 
 class Menu(Game):
@@ -29,6 +29,7 @@ class Menu(Game):
         self.create_platforms()
         self.create_player()
         self.create_menu()
+        self.create_decor()
 
 
     def create_platforms(self):
@@ -49,6 +50,22 @@ class Menu(Game):
                 c.player_background_image)
         self.player = player
         self.objects.append(player)
+
+
+    def create_decor(self):
+        self.ufo = DecorObject(320, 30, 166, 76,
+                back_image_filename='images/ufo.png',
+                speed=(1, 1))
+        self.objects.append(self.ufo)
+
+
+    def update_ufo(self):
+        x_offset = 20
+        y_offset = 10
+        if self.ufo.left > self.ufo.start_pos[0] + x_offset or self.ufo.left < self.ufo.start_pos[0] - x_offset:
+            self.ufo.speed = (-self.ufo.speed[0], self.ufo.speed[1])
+        if self.ufo.top > self.ufo.start_pos[1] + y_offset or self.ufo.top < self.ufo.start_pos[1] - y_offset:
+            self.ufo.speed = (self.ufo.speed[0], -self.ufo.speed[1])
 
 
     def handle_player_collisions(self):
@@ -80,6 +97,7 @@ class Menu(Game):
 
     def update(self):
         self.handle_player_collisions()
+        self.update_ufo()
         super().update()
 
 
