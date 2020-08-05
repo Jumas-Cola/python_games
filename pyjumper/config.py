@@ -4,8 +4,8 @@ screen_height = 850
 background_image = 'images/background.png'
 menu_background_image = 'images/menu_background.png'
 player_background_image = 'images/player.png'
-btn_background_image = 'images/btn.png'
-btn_hover_background_image = 'images/hover_btn.png'
+btn_background_image = 'images/consent_button.png'
+btn_hover_background_image = 'images/consent_button_on.png'
 
 frame_rate = 30
 

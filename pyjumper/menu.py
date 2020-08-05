@@ -114,7 +114,7 @@ class Menu(Game):
         play_btn = Button(c.screen_width//2 -
                 (c.platforms_generate_interval[1] - c.platforms_generate_interval[0])
                 + 110, 230, c.menu_button_w, c.menu_button_h, 'play', self.play,
-                c.btn_background_image, padding=(60, 15),
+                c.btn_background_image, padding=(63, 15),
                 on_hover=set_hover_btn_background,
                 on_normal=set_btn_background)
         self.objects.append(play_btn)
@@ -124,7 +124,7 @@ class Menu(Game):
         quit_btn = Button(c.screen_width//2 -
                 (c.platforms_generate_interval[1] - c.platforms_generate_interval[0])
                 + 150, 340, c.menu_button_w, c.menu_button_h, 'quit', lambda btn: sys.exit(),
-                c.btn_background_image, padding=(60, 15),
+                c.btn_background_image, padding=(63, 15),
                 on_hover=set_hover_btn_background,
                 on_normal=set_btn_background)
         self.objects.append(quit_btn)
