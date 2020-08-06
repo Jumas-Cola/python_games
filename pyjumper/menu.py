@@ -11,7 +11,7 @@ from game import Game
 from text_object import TextObject
 from button import Button
 from pyjumper import PyJumper
-from decor_obj import DecorObject
+from decor_object import DecorObject
 
 
 class Menu(Game):
@@ -35,7 +35,7 @@ class Menu(Game):
     def create_platforms(self):
         platform_1 = BasicPlatform(c.screen_width//2 -
                 (c.platforms_generate_interval[1] - c.platforms_generate_interval[0])
-                + 90, 700, c.platform_w, c.platform_h)
+                + 90, 700, c.platform_w, c.platform_h, player_jump_speed=20)
         self.platform = platform_1
         self.objects.append(platform_1)
 
@@ -43,18 +43,22 @@ class Menu(Game):
     def create_player(self):
         player = Player(c.screen_width//2 -
                 (c.platforms_generate_interval[1] - c.platforms_generate_interval[0])
-                + 115, 500, c.player_w, c.player_h,
+                + 90, 500, c.player_w, c.player_h,
                 (0, 0),
                 (0, 1),
-                5,
-                c.player_background_image)
+                0,
+                c.player_background_image,
+                c.player_shooting_background_image)
         self.player = player
         self.objects.append(player)
 
 
     def create_decor(self):
-        self.ufo = DecorObject(320, 30, 166, 76,
-                back_image_filename='images/ufo.png',
+        self.ray = DecorObject(320, 30, 158, 181,
+                background_image=c.ray_image)
+        self.objects.append(self.ray)
+        self.ufo = DecorObject(320, 30, 155, 68,
+                background_image=c.ufo_image,
                 speed=(1, 1))
         self.objects.append(self.ufo)
 
@@ -66,6 +70,8 @@ class Menu(Game):
             self.ufo.speed = (-self.ufo.speed[0], self.ufo.speed[1])
         if self.ufo.top > self.ufo.start_pos[1] + y_offset or self.ufo.top < self.ufo.start_pos[1] - y_offset:
             self.ufo.speed = (self.ufo.speed[0], -self.ufo.speed[1])
+        self.ray.bounds = Rect(self.ufo.bounds[0], self.ufo.bounds[1] + 3 / 4 * self.ufo.height, self.ray.width, self.ray.height)
+        self.ray.visible = True if random.random() > 0.5 else False
 
 
     def handle_player_collisions(self):

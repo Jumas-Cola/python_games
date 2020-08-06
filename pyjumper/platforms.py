@@ -7,29 +7,23 @@ import config as c
 from game_object import GameObject
 
 
-spring_image = 'images/spring.png'
-
-
 class Platform(GameObject):
-    def __init__(self, x, y, w, h, back_image_filename=None, color=None, springed=False, player_jump_speed=22):
+    def __init__(self, x, y, w, h, background_image=None, color=None, springed=False, player_jump_speed=22):
         GameObject.__init__(self, x, y, w, h)
         self.player_jump_speed = player_jump_speed
-        if back_image_filename:
-            self.background_image = pygame.image.load(back_image_filename)
+        if background_image:
             self.background_image = pygame.transform.scale(
-                    self.background_image,
+                    background_image,
                     self.bounds.size)
-            self.background_image = self.background_image.convert_alpha()
         else:
             self.color = color
         if springed:
-            self.spring_image = pygame.image.load(spring_image)
             self.spring_image = pygame.transform.scale(
-                    self.spring_image,
-                    (c.platform_h, c.platform_h))
-            self.spring_image = self.spring_image.convert_alpha()
+                   c.spring_image,
+                   (c.platform_h, c.platform_h))
             self.spring_offset = random.randint(c.platform_h, c.platform_w - c.platform_h)
-            self.player_jump_speed = 30
+            self.spring_is_hited = False
+            self.player_spring_jump_speed = 41
         self.speedy_before_scroll = self.speed[1]
         self.need_to_delete = False
         self.is_hited = False
@@ -39,11 +33,9 @@ class Platform(GameObject):
 
 
     def redraw_background(self):
-        self.background_image = pygame.image.load(self.back_image_filename)
         self.background_image = pygame.transform.scale(
                 self.background_image,
                 self.bounds.size)
-        self.background_image = self.background_image.convert_alpha()
 
 
     def draw(self, surface):
@@ -55,23 +47,38 @@ class Platform(GameObject):
             surface.blit(rect, (self.left, self.top))
 
         if self.springed:
-            surface.blit(self.spring_image, (
-                self.left + self.spring_offset,
-                self.top - c.platform_h))
+            pos = (self.left + self.spring_offset,
+                    self.top - c.platform_h + 2)
+            if self.spring_is_hited:
+                self.spring_image = c.opened_spring_image
+                self.spring_image = pygame.transform.scale(
+                        self.spring_image,
+                        (c.platform_h, 2 * c.platform_h))
+                pos = (self.left + self.spring_offset,
+                        self.top - 2 * c.platform_h)
+            surface.blit(self.spring_image, pos)
 
 
     def update_pos(self):
         pass
 
 
+    def is_jump_on_spring(self, other):
+        if self.springed:
+            return set(range(self.left + self.spring_offset,
+                self.left + self.spring_offset + self.spring_image.get_rect()[2] + 1)) \
+                        & set(range(other.left, other.right + 1))
+        return False
+
+
 class BasicPlatform(Platform):
-    def __init__(self, x, y, w, h, back_image_filename='images/platform.png', springed=False):
-        Platform.__init__(self, x, y, w, h, back_image_filename, springed=springed)
+    def __init__(self, x, y, w, h, background_image=c.basic_platform, springed=False, player_jump_speed=22):
+        Platform.__init__(self, x, y, w, h, background_image, springed=springed, player_jump_speed=player_jump_speed)
 
 
 class MovingHorizontalPlatform(Platform):
-    def __init__(self, x, y, w, h, back_image_filename='images/platform_moving_horizontal.png', springed=False):
-        Platform.__init__(self, x, y, w, h, back_image_filename, springed=springed)
+    def __init__(self, x, y, w, h, background_image=c.platform_moving_horizontal, springed=False):
+        Platform.__init__(self, x, y, w, h, background_image, springed=springed)
         self.speed = (3, 0)
 
 
@@ -82,8 +89,8 @@ class MovingHorizontalPlatform(Platform):
         
 
 class MovingVerticalPlatform(Platform):
-    def __init__(self, x, y, w, h, back_image_filename='images/platform_moving_vertical.png', springed=False):
-        Platform.__init__(self, x, y, w, h, back_image_filename, springed=springed)
+    def __init__(self, x, y, w, h, background_image=c.platform_moving_vertical, springed=False):
+        Platform.__init__(self, x, y, w, h, background_image, springed=springed)
         self.speed = (0, 2)
         self.start_pos = y
         self.diapason = 100
@@ -99,8 +106,8 @@ class MovingVerticalPlatform(Platform):
 
 
 class OneHitPlatform(Platform):
-    def __init__(self, x, y, w, h, back_image_filename='images/one_hit_platform.png', springed=False):
-        Platform.__init__(self, x, y, w, h, back_image_filename, springed=springed)
+    def __init__(self, x, y, w, h, background_image=c.one_hit_platform, springed=False):
+        Platform.__init__(self, x, y, w, h, background_image, springed=springed)
 
 
     def update_pos(self):
@@ -109,18 +116,29 @@ class OneHitPlatform(Platform):
 
 
 class BrokenPlatform(Platform):
-    def __init__(self, x, y, w, h, back_image_filename='images/broken_platform.png', springed=False):
-        Platform.__init__(self, x, y, w, h, back_image_filename, springed=False)
+    def __init__(self, x, y, w, h, background_image=c.broken_platform, springed=False):
+        Platform.__init__(self, x, y, w, h, background_image, springed=False)
         self.player_jump_speed = 0
         self.broken = True
-        self.delete_delay = 10
+        self.delete_delay = 20
+        self.start_delete_delay = self.delete_delay
+        self.start_height = self.height
 
 
     def update_pos(self):
         if self.is_hited:
+            if self.delete_delay > 2 * self.start_delete_delay / 3:
+                self.bounds.height = int(4 / 3 * self.start_height)
+                self.background_image = c.broken_platform_2
+            elif self.delete_delay > self.start_delete_delay / 3:
+                self.bounds.height = int(5 / 3 * self.start_height)
+                self.background_image = c.broken_platform_3
+            else:
+                self.bounds.height = int(6 / 3 * self.start_height)
+                self.background_image = c.broken_platform_4
+                    
             self.delete_delay -= 1
-            self.back_image_filename = 'images/broken_platform_2.png'
             self.redraw_background()
-            self.bounds.top += 1
+            self.bounds.top += 2
             if not self.delete_delay:
                 self.need_to_delete = True

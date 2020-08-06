@@ -5,11 +5,11 @@ import pygame
 from pygame.rect import Rect
 
 import config as c
-import platforms
 from player import Player
 from game import Game
 from text_object import TextObject
-from decor_obj import DecorObject
+from decor_object import DecorObject
+import platforms
 
 
 class PyJumper(Game):
@@ -79,18 +79,21 @@ class PyJumper(Game):
                 (0, 0),
                 (0, 1),
                 10,
-                c.player_background_image)
+                c.player_background_image,
+                c.player_shooting_background_image)
         self.keydown_handlers[pygame.K_LEFT].append(player.handle)
         self.keydown_handlers[pygame.K_RIGHT].append(player.handle)
+        self.keydown_handlers[pygame.K_SPACE].append(player.space_handle_down)
         self.keyup_handlers[pygame.K_LEFT].append(player.handle)
         self.keyup_handlers[pygame.K_RIGHT].append(player.handle)
+        self.keyup_handlers[pygame.K_SPACE].append(player.space_handle_up)
         self.player = player
         self.objects.append(self.player)
 
 
     def create_decor(self):
         top_rect = DecorObject(0, 0, c.screen_width, 100,
-                back_image_filename='images/topbar.png')
+                background_image=pygame.image.load('images/topbar.png'))
         self.objects.append(top_rect)
 
 
@@ -116,17 +119,25 @@ class PyJumper(Game):
         for platform in self.platforms_list:
             edge = intersect(platform, self.player)
             if edge == 'top' and self.player.speed[1] > 3:
-                if platform.springed:
+
+                speed_y = -platform.player_jump_speed
+
+                if platform.is_jump_on_spring(self.player):
                     self.sound_effects['spring'].play()
-                elif platform.broken and not platform.is_hited:
-                    self.sound_effects['broken'].play()
+                    platform.spring_is_hited = True
+                    speed_y = -platform.player_spring_jump_speed
+                elif platform.broken:
+                    speed_y = s[1]
+                    if not platform.is_hited:
+                        self.sound_effects['broken'].play()
+                    else:
+                        self.sound_effects['jump'].play()
                 else:
                     self.sound_effects['jump'].play()
+
                 speed_x = s[0]
-                if platform.broken:
-                    speed_y = s[1]
-                else:
-                    speed_y = -platform.player_jump_speed
+
+
                 if self.player.moving_left:
                     speed_x -= 1
                 elif self.player.moving_left:
